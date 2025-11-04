@@ -1,4 +1,0 @@
-# CVPR Research Utilities
-
-
-
