@@ -1,0 +1,15 @@
+ProbLoc Evaluation Results
+==================================================
+
+Dataset: stream2
+VPR Method: modernloc
+Top-K: 10
+RANSAC iterations: 50
+
+Results:
+  ATE (mean):   190.53 m
+  ATE (median): 196.95 m
+  ATE (std):    83.77 m
+  Inliers: 9
+  ICP success rate: 0.0%
+  Time: 2.2s

@@ -1,0 +1,16 @@
+BruteLoc (Beam Search) Evaluation Results
+==================================================
+
+Dataset: stream2
+VPR Method: modernloc
+Top-K: 20
+Beam width: 100
+
+Search:
+  Anchors found: 25
+  Time: 7.9s
+
+Results:
+  ATE (mean):   282.34 m
+  ATE (median): 196.02 m
+  Theoretical minimum (anchors): 139.25 m

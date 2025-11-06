@@ -1,0 +1,26 @@
+Seed set to: 42 (type: <class 'int'>)
+======================================================================
+AnyLoc Universal Vocabulary Builder (DINOv2)
+======================================================================
+Model: dinov2_vitg14
+Layer: 31, Facet: value
+Datasets: nardo, nardo-r
+Clusters: 32
+Max images/dataset: unlimited
+Sample rate: 1
+Device: cpu
+======================================================================
+
+nardo: 102 reference images
+nardo-r: 102 reference images
+
+Total images for vocabulary: 204
+
+Loading DINOv2 extractor...
+Using cache found in /home/pavel/.cache/torch/hub/facebookresearch_dinov2_main
+/home/pavel/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:43: UserWarning: xFormers is available (SwiGLU)
+  warnings.warn("xFormers is available (SwiGLU)")
+/home/pavel/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:27: UserWarning: xFormers is available (Attention)
+  warnings.warn("xFormers is available (Attention)")
+/home/pavel/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:33: UserWarning: xFormers is available (Block)
+  warnings.warn("xFormers is available (Block)")

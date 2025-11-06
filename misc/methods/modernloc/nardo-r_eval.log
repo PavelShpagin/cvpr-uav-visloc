@@ -1,0 +1,60 @@
+Seed set to: 42 (type: <class 'int'>)
+[INFO]: Configs is modifying path
+Library path /home/pavel/dev/drone-embeddings/research/methods/modernloc/repo already in PYTHONPATH
+======================================================================
+Evaluating ModernLoc (DINOv3-S/16): nardo-r
+======================================================================
+Dataset: /home/pavel/dev/drone-embeddings/research/datasets/nardo-r
+Vocabulary: /home/pavel/dev/drone-embeddings/research/methods/modernloc/vocab/nardo-r.pkl
+Device: cuda
+======================================================================
+
+Loading VLAD vocabulary...
+✓ VLAD loaded (clusters: 64)
+✓ Cache directory: /home/pavel/dev/drone-embeddings/research/methods/modernloc/cache
+
+Loading extractor...
+Loading dinov3_vits16...
+  Using provided HuggingFace token
+  Loading from HuggingFace: facebook/dinov2-small
+  ✓ Loaded from HuggingFace
+✓ dinov3_vits16 loaded! Descriptor dim: 384
+✓ Extractor loaded on cuda!
+
+Found 71 query images
+Found 102 reference images
+
+Loading ground truth (top-20)...
+✓ Ground truth loaded: 71 queries
+
+Extracting reference VLADs...
+Reference:   0%|          | 0/102 [00:00<?, ?it/s]Reference:   1%|          | 1/102 [00:00<00:13,  7.37it/s]Reference:   7%|▋         | 7/102 [00:00<00:02, 31.67it/s]Reference:  13%|█▎        | 13/102 [00:00<00:02, 40.57it/s]Reference:  19%|█▊        | 19/102 [00:00<00:01, 44.68it/s]Reference:  24%|██▎       | 24/102 [00:00<00:01, 46.26it/s]Reference:  29%|██▉       | 30/102 [00:00<00:01, 47.91it/s]Reference:  35%|███▌      | 36/102 [00:00<00:01, 48.64it/s]Reference:  40%|████      | 41/102 [00:00<00:01, 48.67it/s]Reference:  46%|████▌     | 47/102 [00:01<00:01, 49.27it/s]Reference:  52%|█████▏    | 53/102 [00:01<00:00, 49.65it/s]Reference:  57%|█████▋    | 58/102 [00:01<00:00, 49.74it/s]Reference:  63%|██████▎   | 64/102 [00:01<00:00, 49.93it/s]Reference:  68%|██████▊   | 69/102 [00:01<00:00, 49.50it/s]Reference:  73%|███████▎  | 74/102 [00:01<00:00, 49.10it/s]Reference:  77%|███████▋  | 79/102 [00:01<00:00, 49.06it/s]Reference:  82%|████████▏ | 84/102 [00:01<00:00, 49.22it/s]Reference:  88%|████████▊ | 90/102 [00:01<00:00, 49.48it/s]Reference:  93%|█████████▎| 95/102 [00:02<00:00, 49.61it/s]Reference:  98%|█████████▊| 100/102 [00:02<00:00, 49.68it/s]Reference: 100%|██████████| 102/102 [00:02<00:00, 47.39it/s]
+✓ Reference VLADs: torch.Size([102, 24576])
+
+Extracting query VLADs...
+Query:   0%|          | 0/71 [00:00<?, ?it/s]Query:   7%|▋         | 5/71 [00:00<00:01, 48.09it/s]Query:  14%|█▍        | 10/71 [00:00<00:01, 48.56it/s]Query:  21%|██        | 15/71 [00:00<00:01, 48.79it/s]Query:  28%|██▊       | 20/71 [00:00<00:01, 48.55it/s]Query:  35%|███▌      | 25/71 [00:00<00:00, 48.87it/s]Query:  42%|████▏     | 30/71 [00:00<00:00, 48.91it/s]Query:  49%|████▉     | 35/71 [00:00<00:00, 48.84it/s]Query:  56%|█████▋    | 40/71 [00:00<00:00, 48.85it/s]Query:  63%|██████▎   | 45/71 [00:00<00:00, 48.91it/s]Query:  70%|███████   | 50/71 [00:01<00:00, 48.55it/s]Query:  77%|███████▋  | 55/71 [00:01<00:00, 48.47it/s]Query:  85%|████████▍ | 60/71 [00:01<00:00, 48.51it/s]Query:  92%|█████████▏| 65/71 [00:01<00:00, 48.39it/s]Query:  99%|█████████▊| 70/71 [00:01<00:00, 47.59it/s]Query: 100%|██████████| 71/71 [00:01<00:00, 48.41it/s]
+✓ Query VLADs: torch.Size([71, 24576])
+
+Computing recalls...
+
+Debug: First 5 queries
+  Query 0: retrieved=41, GT_soft_positives=[37, 54, 38, 55, 36], match=False
+  Query 1: retrieved=40, GT_soft_positives=[37, 38, 54, 55, 20], match=False
+  Query 2: retrieved=40, GT_soft_positives=[38, 55, 37, 54, 39], match=False
+  Query 3: retrieved=68, GT_soft_positives=[38, 55, 37, 54, 39], match=False
+  Query 4: retrieved=40, GT_soft_positives=[38, 55, 37, 54, 39], match=False
+
+======================================================================
+RESULTS: ModernLoc (DINOv3-S/16) - nardo-r
+======================================================================
+Queries: 71
+References: 102
+VLAD clusters: 64
+Device: cuda
+======================================================================
+Recall@ 1 =  61.97%
+Recall@ 5 =  87.32%
+Recall@10 =  92.96%
+Recall@20 = 100.00%
+======================================================================
+

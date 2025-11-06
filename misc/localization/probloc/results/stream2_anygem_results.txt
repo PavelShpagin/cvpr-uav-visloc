@@ -1,0 +1,15 @@
+ProbLoc Evaluation Results
+==================================================
+
+Dataset: stream2
+VPR Method: anygem
+Top-K: 10
+RANSAC iterations: 50
+
+Results:
+  ATE (mean):   180.44 m
+  ATE (median): 184.26 m
+  ATE (std):    86.76 m
+  Inliers: 10
+  ICP success rate: 0.0%
+  Time: 3.1s
