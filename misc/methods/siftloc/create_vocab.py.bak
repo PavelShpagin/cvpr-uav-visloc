@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+"""
+Build VLAD vocabulary for SiftLoc (SIFT+VLAD)
+
+Usage:
+  python create_vocab.py --dataset nardo --clusters 128
+"""
+
+import sys
+import argparse
+import pickle
+from pathlib import Path
+
+# Add local repo to path
+REPO_PATH = Path(__file__).parent / 'repo'
+sys.path.insert(0, str(REPO_PATH))
+
+# Add shared utilities (AnyLoc repo)
+SHARED_REPO = Path(__file__).parent.parent.parent / 'third-party' / 'AnyLoc_repro'
+sys.path.insert(0, str(SHARED_REPO))
+
+import torch
+import torch.nn.functional as F
+import einops as ein
+from tqdm import tqdm
+from PIL import Image
+from torchvision import transforms as tvf
+
+# Method imports
+from sift_extractor import SIFTExtractor
+from utilities import VLAD, seed_everything
+from configs import device
+
+
+def extract_descriptors(img_path, extractor, transform, img_size):
+    """Extract patch descriptors from an image."""
+    img = Image.open(img_path).convert('RGB')
+    img_tensor = transform(img).to(device)
+    img_tensor = ein.rearrange(img_tensor, "c h w -> 1 c h w")
+    img_tensor = F.interpolate(img_tensor, img_size, mode='bilinear', align_corners=False)
+    
+    with torch.no_grad():
+        desc = extractor.extract_descriptors(img_tensor)
+    
+    # SiftLoc returns [B, 1, N, 128] where N is number of keypoints
+    # We need [N, D] for VLAD
+    if desc.dim() == 4:  # [B, 1, N, D] from SIFT
+        desc = desc.squeeze(1)  # Remove channel dim -> [B, N, D]
+    
+    if desc.dim() == 3:  # [B, N, D]
+        desc = desc.squeeze(0)  # Remove batch dim -> [N, D]
+    
+    return desc.cpu()  # [N, D]
+
+
+def create_vocabulary(dataset_name, clusters=128, max_patches=500000):
+    """
+    Build VLAD vocabulary for specified dataset.
+    
+    Args:
+        dataset_name: 'nardo', 'nardo-r', or 'stream2'
+        clusters: Number of VLAD clusters
+        max_patches: Maximum patches for vocabulary training
+    """
+    seed_everything(42)
+    
+    # Paths
+    dataset_root = Path(__file__).parent.parent.parent / 'datasets' / dataset_name
+    ref_images = dataset_root / 'reference_images'
+    vocab_output = Path(__file__).parent / 'vocab' / f'{dataset_name}.pkl'
+    vocab_dir = vocab_output.parent
+    vocab_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Configuration
+    img_size = (640, 640)
+    
+    print(f"{'='*70}")
+    print(f"Building VLAD Vocabulary: SiftLoc (SIFT+VLAD) - {dataset_name}")
+    print(f"{'='*70}")
+    print(f"Dataset: {ref_images}")
+    print(f"Output: {vocab_output}")
+    print(f"Model: SiftLoc (SIFT+VLAD)")
+    print(f"VLAD clusters: {clusters}")
+    print(f"Max patches: {max_patches:,}")
+    print(f"Device: {device}")
+    print(f"{'='*70}\n")
+    
+    # Find images
+    print("Scanning for images...")
+    image_paths = sorted(list(ref_images.glob('*.jpg')))
+    if not image_paths:
+        image_paths = sorted(list(ref_images.glob('*.png')))
+    
+    if not image_paths:
+        print(f"ERROR: No images found in {ref_images}")
+        return 1
+    
+    print(f"✓ Found {len(image_paths)} images\n")
+    
+    # Initialize extractor
+    print("Loading extractor...")
+    extractor = SIFTExtractor(device=device)
+    print(f"✓ Extractor loaded on {device}!\n")
+    
+    transform = tvf.Compose([
+        tvf.ToTensor(),
+        tvf.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    
+    # Extract descriptors
+    print("Extracting descriptors...")
+    all_descriptors = []
+    
+    for img_path in tqdm(image_paths, desc="Processing"):
+        try:
+            desc = extract_descriptors(img_path, extractor, transform, img_size)
+            if desc.shape[0] > 0:
+                all_descriptors.append(desc)
+        except Exception as e:
+            print(f"Warning: Failed to process {img_path}: {e}")
+            continue
+    
+    if not all_descriptors:
+        print("ERROR: No descriptors extracted!")
+        return 1
+    
+    # Concatenate
+    print("\nConcatenating descriptors...")
+    all_vocab_desc = torch.cat(all_descriptors, dim=0)
+    desc_dim = all_vocab_desc.shape[1]
+    print(f"Total descriptors: {all_vocab_desc.shape[0]:,} × {desc_dim} dims")
+    
+    # Subsample if needed
+    if all_vocab_desc.shape[0] > max_patches:
+        print(f"Subsampling to {max_patches:,} for K-means...")
+        perm = torch.randperm(all_vocab_desc.shape[0])[:max_patches]
+        all_vocab_desc = all_vocab_desc[perm]
+        print(f"Subsampled: {all_vocab_desc.shape[0]:,}")
+    
+    # Fit VLAD
+    print(f"\nFitting VLAD with {clusters} clusters...")
+    print("Note: This may take several minutes...\n")
+    
+    vlad = VLAD(num_clusters=clusters, desc_dim=desc_dim, cache_dir=str(vocab_dir))
+    vlad.fit(all_vocab_desc)
+    
+    print(f"\n✓ VLAD fitted! Cluster centers: {vlad.c_centers.shape}")
+    
+    # Save vocabulary
+    with open(vocab_output, 'wb') as f:
+        pickle.dump(vlad, f)
+    
+    c_centers_path = vocab_dir / f'{dataset_name}_c_centers.pt'
+    torch.save(vlad.c_centers, c_centers_path)
+    
+    print(f"✓ Vocabulary saved: {vocab_output}")
+    print(f"✓ Cluster centers saved: {c_centers_path}")
+    
+    print(f"\n{'='*70}")
+    print("✓ Vocabulary building complete!")
+    print(f"{'='*70}\n")
+    
+    return 0
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Build VLAD vocabulary for SiftLoc (SIFT+VLAD)')
+    parser.add_argument('--dataset', required=True, choices=['nardo', 'nardo-r', 'stream2'],
+                       help='Dataset to build vocabulary for')
+    parser.add_argument('--clusters', type=int, default=128, 
+                       help='Number of VLAD clusters (default: 128)')
+    parser.add_argument('--max-patches', type=int, default=500000, 
+                       help='Maximum patches for training (default: 500000)')
+    
+    args = parser.parse_args()
+    
+    return create_vocabulary(args.dataset, args.clusters, args.max_patches)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

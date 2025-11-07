@@ -1,6 +1,0 @@
-usage: create_vocab.py [-h] --dataset {nardo,nardo-r,stream2}
-                       [--clusters CLUSTERS] [--max-patches MAX_PATCHES]
-create_vocab.py: error: unrecognized arguments: --force
-Seed set to: 42 (type: <class 'int'>)
-[INFO]: Configs is modifying path
-Library path /home/pavel/dev/drone-embeddings/research/methods/modernloc/repo already in PYTHONPATH
